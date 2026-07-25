@@ -1,0 +1,15 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SPICE / Simulation outputs
+*.raw
+*.log
+*.out
+*.tmp
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
