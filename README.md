@@ -13,16 +13,19 @@
 
 It includes a **Pure Frontend Web Simulator** (`index.html`) running Python directly inside your browser via WebAssembly (Pyodide), requiring zero installation or backend server!
 
+👉 **[Launch Live Web Simulator](https://ivanshyu.github.io/safe-tube-model-fit/)** *(Designed by rhuan_audiophile)*
+
 ---
 
 ## 🌐 Pure Frontend Web Simulator (`index.html`)
 
-Simply open `index.html` in any web browser (or host on GitHub Pages):
+Simply open `index.html` in any web browser or visit the **[Live Web Simulator](https://ivanshyu.github.io/safe-tube-model-fit/)**:
 
 1. **Drag & Drop `.utd` Files**: Select or drop one or multiple uTracer `.utd` exports.
 2. **Instant Multi-Start Fitting**: Runs log-space Nelder-Mead fitting directly inside WebAssembly.
-3. **Interactive Ultra-Linear Slider**: Drag the UL tap slider from **0% (Pentode)** to **43% (UL)** to **100% (Triode)** and watch the characteristic curves render in real time.
-4. **1-Click Download**: Copy SPICE code or download `.cir` subcircuits directly to your computer.
+3. **Interactive Datasheet Simulator**: Auto-generates clean 8–15 characteristic curves with step intervals of 2V or 5V and right-edge bias labels.
+4. **Interactive Ultra-Linear Slider**: Drag the UL tap slider from **0% (Pentode)** to **43% (UL)** to **100% (Triode)** and watch the characteristic curves render in real time.
+5. **1-Click Download**: Copy SPICE code or download `.cir` subcircuits directly to your computer.
 
 ---
 
