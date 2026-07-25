@@ -1,0 +1,35 @@
+* ====================================================
+* Transient-Safe Derk Pentode Model: PCL805_Safe
+* Singularity-free & ngspice 46 Compatible (MIN/MAX Clamped)
+* ====================================================
+.SUBCKT PCL805_Safe 1 2 3 4 PARAMS: RGI=2000 CCG1=0 CCG2=0 CG1G2=0 CPG1=0 CCP=0 ; A G2 G1 C
+
+* 1. Smooth positive effective voltages (Eliminates negative plate singularity)
+E_VA_EFF 10 0 VALUE={ 0.5 * (V(1,4) + SQRT(V(1,4)*V(1,4) + 0.01)) }
+E_VS_EFF 20 0 VALUE={ 0.5 * (V(2,4) + SQRT(V(2,4)*V(2,4) + 0.01)) }
+
+* 2. Koren Space Potential E1 (MIN/MAX numerical clamp)
+E1 7 0 VALUE={ V(20)/29.9520 * LOG(1 + EXP(MIN(MAX(29.9520*(1/9.8966 + V(3,4)/SQRT(2300.7950 + V(20)*V(20))), -50), 50))) }
+
+* 3. Koren Space Current Ip (Inlined smooth-positive inside PWR to prevent Newton NaNs)
+E_IP 80 0 VALUE={ PWR(0.5 * (V(7) + SQRT(V(7)*V(7) + 1e-12)), 1.2784) }
+
+* 4. Smooth negative plate voltage cutoff factor (ngspice 46 compatible without IF)
+E_CUTOFF 95 0 VALUE={ EXP((V(1,4) - SQRT(V(1,4)*V(1,4) + 0.0001)) / 4.0) }
+
+* 5. Current Sources (Inlined Newton-safe denominator)
+G2 2 4 VALUE={ (V(80) / 4223.2603) * (1.0 + 19.5727 / (1.0 + 6.739905607e-02 * V(10))) * V(95) }
+G1 1 4 VALUE={ V(80) * (8.330406679e-03 + 4.432887806e-07 * V(10) - (1.0 / (1.0 + 6.739905607e-02 * V(10))) * 8.330406679e-03) * V(95) }
+
+* 6. Grid Diode & Parasitic Capacitances
+R1 3 5 {RGI}
+D3 5 4 DX
+.MODEL DX D(IS=1N RS=1 CJO=10PF TT=1N)
+RCP 1 4 1G
+RCS 2 4 1G
+C1 3 4 {CCG1}
+C2 2 4 {CCG2}
+C3 3 2 {CG1G2}
+C4 3 1 {CPG1}
+C5 1 4 {CCP}
+.ENDS PCL805_Safe
