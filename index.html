@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExtractModel-Safe ⚡ Vacuum Tube SPICE Fitting & Web Simulator</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js & Pyodide CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Navigation Header with Designer Credit & Logo Banner -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo-img">
+          <img src="assets/rhuan_audio_logo.png" alt="RHUAN AUDIO Logo" id="header-logo">
+        </div>
+        <div class="brand-text">
+          <h1>ExtractModel-Safe <span class="badge">v4.0</span></h1>
+          <p>uTracer .utd SPICE Fitting Engine & Datasheet Simulator</p>
+        </div>
+      </div>
+
+      <div class="designer-banner">
+        <div class="designer-info">
+          <span class="designer-by">Designed by</span>
+          <span class="designer-name">rhuan_audiophile</span>
+        </div>
+        <a href="https://www.instagram.com/rhuan_audiophile?igsh=MW1hNWtxc3BldjQ4dw==" target="_blank" class="btn-ig">
+          <i class="fa-brands fa-instagram"></i> Follow IG
+        </a>
+      </div>
+
+      <div class="header-actions">
+        <div id="pyodide-status" class="status-indicator loading">
+          <span class="dot"></span>
+          <span class="status-text">Initializing Python WebAssembly...</span>
+        </div>
+        <a href="https://github.com/ivanshyu/safe-tube-model-fit" target="_blank" class="btn btn-outline">
+          <i class="fa-brands fa-github"></i> GitHub Repo
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="main-layout">
+      
+      <!-- Left Sidebar: Controls & File Upload -->
+      <aside class="sidebar">
+        
+        <!-- Dropzone Section -->
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-file-import"></i> 1. Measurement Data (.utd)</h2>
+          <div id="dropzone" class="dropzone">
+            <input type="file" id="file-input" multiple accept=".utd,.txt,.dat" hidden>
+            <div class="dropzone-content">
+              <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+              <p class="drop-text">Drag & drop uTracer <strong>.utd</strong> file(s) here</p>
+              <span class="drop-subtext">or click to browse local files</span>
+            </div>
+          </div>
+          <div id="file-list" class="file-list"></div>
+        </div>
+
+        <!-- Model Configuration Section -->
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-sliders"></i> 2. Model Settings</h2>
+          
+          <!-- Step 1: Tube Category Selector (Triode vs Pentode with Custom Schematic SVG Icons) -->
+          <div class="form-group">
+            <label>Tube Category</label>
+            <div class="radio-group">
+              
+              <!-- Pentode Radio Card (Reference 2: Elongated Envelope with 3 Grids) -->
+              <label class="radio-card active" id="radio-pentode-label">
+                <input type="radio" name="tube-category" id="category-pentode" value="pentode" checked>
+                <div class="tube-icon-wrapper">
+                  <svg class="tube-icon-svg" viewBox="0 0 60 70" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M 18 15 A 12 12 0 0 1 42 15 L 42 55 A 12 12 0 0 1 18 55 Z" stroke-width="2.5"/>
+                    <line x1="30" y1="3" x2="30" y2="14"/>
+                    <line x1="22" y1="14" x2="38" y2="14" stroke-width="3"/>
+                    <line x1="22" y1="24" x2="38" y2="24" stroke-dasharray="2 2"/>
+                    <line x1="38" y1="24" x2="48" y2="24"/>
+                    <line x1="22" y1="34" x2="38" y2="34" stroke-dasharray="2 2"/>
+                    <line x1="12" y1="34" x2="22" y2="34"/>
+                    <line x1="22" y1="44" x2="38" y2="44" stroke-dasharray="2 2"/>
+                    <line x1="12" y1="44" x2="22" y2="44"/>
+                    <path d="M 23 53 A 7 7 0 0 1 37 53" stroke-width="3"/>
+                    <line x1="37" y1="53" x2="48" y2="53"/>
+                    <line x1="26" y1="67" x2="26" y2="58"/>
+                    <line x1="34" y1="67" x2="34" y2="58"/>
+                  </svg>
+                  <span>Pentode / Tetrode</span>
+                </div>
+              </label>
+
+              <!-- Triode Radio Card (Reference 1: Circular Envelope with 1 Grid) -->
+              <label class="radio-card" id="radio-triode-label">
+                <input type="radio" name="tube-category" id="category-triode" value="triode">
+                <div class="tube-icon-wrapper">
+                  <svg class="tube-icon-svg" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="30" cy="30" r="24" stroke-width="2.5"/>
+                    <line x1="30" y1="6" x2="30" y2="18"/>
+                    <line x1="20" y1="18" x2="40" y2="18" stroke-width="3"/>
+                    <line x1="16" y1="30" x2="44" y2="30" stroke-dasharray="3 3"/>
+                    <line x1="44" y1="30" x2="54" y2="30"/>
+                    <path d="M 20 40 A 10 10 0 0 1 40 40" stroke-width="3"/>
+                    <line x1="40" y1="40" x2="54" y2="40"/>
+                    <path d="M 25 54 L 25 44 A 5 5 0 0 1 35 44 L 35 54"/>
+                  </svg>
+                  <span>Triode</span>
+                </div>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Step 2: Specific Model Formulation -->
+          <div class="form-group">
+            <label for="model-type">Model Formulation</label>
+            <select id="model-type" class="form-control">
+              <option value="derk-se" selected>SafeDerk-SE (Pentode + Secondary Emission)</option>
+              <option value="derke">SafeDerkE (Exponential Knee)</option>
+              <option value="derk">SafeDerk (Standard Pentode)</option>
+              <option value="koren-pentode">Norman Koren Pentode (Historical Empirical)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="subckt-name">SPICE Subcircuit Name</label>
+            <input type="text" id="subckt-name" class="form-control" value="SafeTubeModel">
+          </div>
+
+          <!-- Ultra-Linear Tap Ratio (Hidden when Triode selected) -->
+          <div class="form-group" id="ul-group">
+            <div class="label-with-value">
+              <label for="tap-ratio">Ultra-Linear Tap Ratio</label>
+              <span id="tap-value" class="highlight-val">Pentode (0% Tap)</span>
+            </div>
+            <input type="range" id="tap-ratio" class="form-range" min="0" max="1" step="0.01" value="0">
+            <div class="range-labels">
+              <span>0% (Pentode)</span>
+              <span>43% (UL)</span>
+              <span>100% (Triode)</span>
+            </div>
+          </div>
+
+          <button id="fit-btn" class="btn btn-primary btn-block" disabled>
+            <i class="fa-solid fa-wand-magic-sparkles" id="fit-btn-icon"></i> <span id="fit-btn-text">Run Multi-Start Fitting</span>
+          </button>
+        </div>
+
+        <!-- Metric Output Card -->
+        <div class="card metrics-card">
+          <h2 class="card-title"><i class="fa-solid fa-chart-line"></i> Fitting Metrics</h2>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <span class="metric-label">Data Points</span>
+              <span id="metric-pts" class="metric-val">0</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">RMSE Loss</span>
+              <span id="metric-rmse" class="metric-val">-- mA</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Solver Status</span>
+              <span id="metric-status" class="metric-val status-idle">Idle</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Time Elapsed</span>
+              <span id="metric-time" class="metric-val">-- s</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Right Main Panel: Charts & SPICE Code Viewer -->
+      <section class="content-panel">
+        
+        <!-- Characteristic Curves Chart Section -->
+        <div class="card chart-card">
+          
+          <!-- View Mode & Axis Control Header with Screen Voltage Vs Input for Pentode -->
+          <div class="card-header flex-wrap">
+            <div class="header-title-group">
+              <h2 class="card-title"><i class="fa-solid fa-wave-square"></i> Datasheet Model Curves</h2>
+            </div>
+
+            <!-- Axis Range & Screen Voltage Controls -->
+            <div class="axis-controls-panel">
+              
+              <!-- Screen Voltage Vs Target Input (Shown ONLY for Pentode) -->
+              <div class="axis-input-group" id="vs-control-group">
+                <span class="axis-label" style="color: var(--amber-gold);">Vs (V):</span>
+                <input type="number" id="vs-target" class="axis-input" value="250" placeholder="Vs" style="width: 60px;">
+              </div>
+
+              <div class="axis-input-group">
+                <span class="axis-label">Va (V):</span>
+                <input type="number" id="axis-xmin" class="axis-input" value="0" placeholder="Min">
+                <span>to</span>
+                <input type="number" id="axis-xmax" class="axis-input" value="300" placeholder="Max">
+              </div>
+
+              <div class="axis-input-group">
+                <span class="axis-label">Current:</span>
+                <input type="number" id="axis-ymin" class="axis-input" value="0" placeholder="Min">
+                <span>to</span>
+                <input type="number" id="axis-ymax" class="axis-input" value="100" placeholder="Max">
+              </div>
+
+              <div class="axis-input-group">
+                <select id="axis-yunit" class="axis-select">
+                  <option value="mA" selected>mA</option>
+                  <option value="A">A</option>
+                </select>
+              </div>
+
+              <button id="axis-auto-btn" class="btn btn-sm btn-accent" title="Auto-generate 8-15 curves with Vg step interval of 2 or 5">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Auto 8~15 Lines
+              </button>
+            </div>
+          </div>
+
+          <div class="charts-wrapper" id="charts-wrapper">
+            
+            <!-- Loading Overlay for Charts -->
+            <div id="chart-loading-overlay" class="loading-overlay">
+              <div class="spinner-box">
+                <i class="fa-solid fa-spinner fa-spin spinner-icon"></i>
+                <p>Fitting Python WebAssembly Model...</p>
+                <span class="spinner-sub" id="spinner-sub-text">Multi-start Nelder-Mead optimization... Please wait ~10-30s for large datasets.</span>
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <h3>Anode Current Ia vs Va</h3>
+              <div class="canvas-container">
+                <canvas id="chart-ia"></canvas>
+              </div>
+            </div>
+            <div class="chart-box" id="chart-is-box">
+              <h3>Screen Current Ig2 vs Va</h3>
+              <div class="canvas-container">
+                <canvas id="chart-is"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generated SPICE Code Section -->
+        <div class="card code-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fa-solid fa-code"></i> Generated Transient-Safe SPICE Subcircuit (.cir)</h2>
+            <div class="code-actions">
+              <button id="copy-code-btn" class="btn btn-sm btn-outline">
+                <i class="fa-regular fa-copy"></i> Copy SPICE
+              </button>
+              <button id="download-cir-btn" class="btn btn-sm btn-accent">
+                <i class="fa-solid fa-download"></i> Download .cir
+              </button>
+            </div>
+          </div>
+          <div class="code-container" id="code-container">
+            <!-- Loading Overlay for Code Box -->
+            <div id="code-loading-overlay" class="loading-overlay">
+              <div class="spinner-box">
+                <i class="fa-solid fa-spinner fa-spin spinner-icon"></i>
+                <p>Generating Transient-Safe SPICE Subcircuit...</p>
+              </div>
+            </div>
+
+            <pre><code id="spice-code-output">* Upload .utd files and click "Run Multi-Start Fitting" to generate Transient-Safe SPICE code...</code></pre>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>ExtractModel-Safe &copy; 2026. Designed by rhuan_audiophile. MIT Licensed.</p>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
