@@ -8,7 +8,7 @@ A robust parameter extraction and SPICE subcircuit generator for vacuum tubes
 Key Features & Transient Safety Protections:
   1. Singularity-free effective voltage regularizer: Va_eff = 0.5 * (Va + sqrt(Va^2 + 0.01))
      eliminates the -1/beta denominator pole during cold-start startup transients (Va < 0).
-  2. ngspice 46 compatibility: Replaces IF() syntax and non-clamping LIMIT(x,a,b) with 
+  2. ngspice 46 compatibility: Replaces IF() syntax and ngspice's non-standard LIMIT() function with 
      exact numerical MIN(MAX(x, a), b) clamping.
   3. Newton-Raphson NaN defense: Inlines smooth-positive protection directly inside PWR()
      and PWR(1.5) to prevent intermediate negative iteration values from generating NaNs.
